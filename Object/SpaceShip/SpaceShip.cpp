@@ -1,55 +1,63 @@
 #include "SpaceShip.h" 
-
-static CoordVector Velocity ;
+#include <iostream> 
 
 SpaceShip::SpaceShip(SDL_Renderer* &gRenderer) {
-    Velocity.CoordY = CustomVelY ; 
-    Velocity.CoordX = CustomVelX ; 
+    SpaceShip::Position = {BigMapWidth / 2 , BigMapHeight / 2} ; 
     SpaceShipImg = loadTexture("images/SpaceShip/SpaceShip.png" , gRenderer) ;
     SpaceShip::gRenderer = gRenderer ;
 }
 
 void SpaceShip::RenderSpaceShip () {
-    int PosXInScreen = CenterPosX , PosYInScreen = CenterPosY ; 
-    if (SpaceShip::PosX - CenterPosX < 0) PosXInScreen = SpaceShip::PosX ; 
-    else if (SpaceShip::PosX + (ScreenWidth + ShipWidth) / 2 > BigMapWidth) PosXInScreen = SpaceShip::PosX - (BigMapWidth - ScreenWidth) ; 
+    CoordPoint RenderPosition = {ScreenWidth / 2 , ScreenHeight / 2} ;
+    CoordPoint CamPosition = GetRealPosOfCam(SpaceShip::Position) ; 
 
-    if (SpaceShip::PosY - CenterPosY < 0) PosYInScreen = SpaceShip::PosY ; 
-    else if (SpaceShip::PosY + (ScreenHeight + ShipHeight) / 2 > BigMapHeight) PosYInScreen = SpaceShip::PosY - (BigMapHeight - ScreenHeight) ; 
+    if (CamPosition.GetX() == 0) RenderPosition.SetX(SpaceShip::Position.GetX()) ; 
+    else if (CamPosition.GetX() == BigMapWidth - ScreenWidth) RenderPosition.SetX(SpaceShip::Position.GetX() - CamPosition.GetX()) ;   
 
-    SDL_Rect DesRect = makeRect(PosXInScreen, PosYInScreen , ShipWidth , ShipHeight) ; 
-    SDL_RenderCopy(SpaceShip::gRenderer , SpaceShip::SpaceShipImg , NULL , &DesRect) ;  
+    if (CamPosition.GetY() == 0) RenderPosition.SetY(SpaceShip::Position.GetY()) ; 
+    else if (CamPosition.GetY() == BigMapHeight - ScreenHeight) RenderPosition.SetY(SpaceShip::Position.GetY() - CamPosition.GetY()) ; 
+
+    SDL_Rect DesRect = makeRect(RenderPosition.GetX() - ShipWidth / 2, RenderPosition.GetY() - ShipHeight / 2 , ShipWidth , ShipHeight) ; 
+
+    printf("Recent Velocity in Render : ") ; RecentVelocity.print() ; 
+    double angle = (RecentVelocity.SqrLeng()) ? acos(-(double) RecentVelocity.GetCoordY() / sqrt((double) RecentVelocity.SqrLeng())) : 0 ; 
+
+    if (RecentVelocity.GetCoordX() < 0) angle = -angle ; 
+
+    angle = angle * 180 / pii ;
+    std::cout << "Angle : " << angle << std::endl ; 
+    SDL_RenderCopyEx(SpaceShip::gRenderer , SpaceShip::SpaceShipImg , NULL , &DesRect , angle , NULL , SDL_FLIP_NONE) ;  
 }
 
-void SpaceShip::HandleEvent (SDL_Event e) {
-    if (e.type == SDL_KEYDOWN) {
+void SpaceShip::MoveTowardMouse() {
+    int x , y ; 
+    SDL_GetMouseState(&x ,&y) ; 
+    CoordPoint CamPosition = GetRealPosOfCam(SpaceShip::Position) ; 
 
-        switch (e.key.keysym.sym)
-        {
-            case SDLK_LEFT:
-                Velocity = Velocity + Turning(Velocity , TurningRate , TurnLeft) ; 
-                break;
+    CoordPoint Mouse = {x + CamPosition.GetX() , y + CamPosition.GetY()} ;
 
-            case SDLK_RIGHT:
-                Velocity = Velocity + Turning(Velocity , TurningRate , TurnRight) ;
+    printf("Mouse Pos : " ) ; Mouse.print() ; 
+    printf("Camera Pos : ") ; CamPosition.print() ; 
 
-            default:
-                break;
-        }
+    CoordVector DimensionVector = {Mouse.GetX() - SpaceShip::Position.GetX() , 
+                                   Mouse.GetY() - SpaceShip::Position.GetY()} ;
 
-    } 
-}
+    printf("Dimension Vector") ; DimensionVector.print() ; 
 
-void SpaceShip::Move () {
-    // if (!(PosX + VelX < 0 || PosX + VelX + ShipWidth > BigMapWidth)) PosX += VelX ; 
+    CoordVector Veloc = {0,0} ; 
 
-    // if (!(PosY + VelY < 0 || PosY + VelY + ShipHeight > BigMapHeight)) PosY += VelY ; 
+    if (DimensionVector.SqrLeng() > 0) 
+        Veloc = { DimensionVector.GetCoordX() * MaxVel / sqrt(DimensionVector.SqrLeng()) 
+                , DimensionVector.GetCoordY() * MaxVel / sqrt(DimensionVector.SqrLeng()) } ;
 
-    if ((PosX + VelX < 0 || PosX + VelX + ShipWidth > BigMapWidth) 
-            || (PosY + VelY < 0 || PosY + VelY + ShipHeight > BigMapHeight)) 
-                VelX = -VelX , VelY = -VelY ; 
+    CoordPoint NewPostion = {(double) SpaceShip::Position.GetX() + Veloc.GetCoordX()
+                           , (double) SpaceShip::Position.GetY() + Veloc.GetCoordY() } ; 
 
-    PosX += VelX ; PosY += VelY ; 
+    printf("Recent Postion : ") ; this->Position.print() ; 
+    printf("Velocity : ") ; Veloc.print() ; 
+    printf("New Position : ") ; NewPostion.print() ; 
+    printf("\n" ) ; 
 
-    printf("%d - %d \n" , PosX , PosY) ; 
+    SpaceShip::RecentVelocity = Veloc ; 
+    SpaceShip::Position = {NewPostion.GetX() , NewPostion.GetY()} ;
 }

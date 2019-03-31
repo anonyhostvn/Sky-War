@@ -3,8 +3,11 @@
 
 #include "../modules/modules.h" 
 
-enum Dimension {TurnLeft , TurnRight} ; 
+enum Dimension {TurnLeft , TurnRight} ;
 
-CoordVector Turning (CoordVector A , int TurningRate , int Dimension) ; 
+extern CoordVector TurningVector[16] ; 
+extern const int NumDirection ; 
+
+CoordPoint GetRealPosOfCam (CoordPoint SpaceShipPos) ; 
 
 #endif

@@ -4,6 +4,7 @@ const int BigMapWidth = 3547 ;
 const int BigMapHeight = 4730 ; 
 const int ScreenWidth = 1000 ; 
 const int ScreenHeight = 600 ; 
+const double pii =  3.14159265358979323846 ; 
 
 bool initVideo (SDL_Window* &gMainWindow , SDL_Renderer* &gRenderer , SDL_Texture* &BigMap,  int width , int height) {
 

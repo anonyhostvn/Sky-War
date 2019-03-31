@@ -8,18 +8,21 @@
 class SpaceShip {
 
      public: 
-        CoordVector Velocity ;
-        const int CenterPosX = (ScreenWidth - ShipWidth) / 2 , CenterPosY = (ScreenHeight - ShipHeight) / 2 ; 
-        int PosX = BigMapWidth / 2, PosY = BigMapHeight / 2 , VelX = 0 , VelY = 3 ;   
+        CoordPoint Position ; 
         SpaceShip(SDL_Renderer* &gRenderer) ;
+        const int CenterPosX = ScreenWidth / 2 , 
+                  CenterPosY = ScreenHeight / 2 ; 
+
         void Jump() ; 
         void Destroy() ; 
         void HandleEvent (SDL_Event e) ;
         void Move() ;
         void RenderSpaceShip () ; 
+        void MoveTowardMouse()  ; 
 
     private:
-        const int AccelerationX = 1  , AccelerationY = 1 , CustomVelY = -4 , CustomVelX = 0 ,  TurningRate = 2;
+        CoordVector RecentVelocity ; 
+        const int MaxVel = 6 ;
         SDL_Renderer* gRenderer = NULL ; 
         SDL_Texture* SpaceShipImg = NULL ; 
         SDL_Texture* SpaceShipImgDestroy = NULL ;  

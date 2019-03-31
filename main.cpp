@@ -4,6 +4,7 @@
 #include "modules/modules.h"
 #include "Object/CameraMan/CameraMan.h" 
 #include "Object/SpaceShip/SpaceShip.h"
+#include <iostream> 
 // #include "Object/SpaceShip/SpaceShip.h"
 
 // const int ScreenWidth = 1000 , ScreenHeight = 1000 ;
@@ -24,7 +25,7 @@ void process () {
 
 
     SpaceShip MainShip(gMainRenderer); 
-    CameraMan MainCam(&MainShip.PosX , &MainShip.PosY , BigMap , gMainRenderer) ; 
+    CameraMan MainCam(&MainShip.Position, BigMap , gMainRenderer) ;
 
     MainCam.RenderCamera() ; 
     MainShip.RenderSpaceShip() ;  
@@ -39,20 +40,28 @@ void process () {
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 quit = true ; 
-            } else MainShip.HandleEvent(e) ; 
+            } 
         }
 
-        MainShip.Move() ;
-        MainCam.RenderCamera() ; 
-        MainShip.RenderSpaceShip() ; 
 
+        printf("=========================== \n") ; 
+        MainShip.MoveTowardMouse() ;
+        MainCam.RenderCamera() ; 
+        MainShip.RenderSpaceShip() ;
+        printf("============================ \n") ; 
+
+        // printf("%d %d \n" , x , y ) ; 
         SDL_RenderPresent(gMainRenderer) ;
-        SDL_Delay(2) ; 
+        SDL_Delay(10) ; 
+
+        // SDL_Delay(100) ; //!For Debug 
 
         // loadMedia("images/back-ground.bmp" , gMainRenderer) ;
     }
 
     closeProgram(gMainWindow , gMainRenderer) ; 
+
+    std::cout << acos((double) 3 / 5) << std::endl << acos(-(double) 3 /5) << std::endl ; 
 }
 
 int main () {
