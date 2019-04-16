@@ -1,6 +1,6 @@
 #include "CameraMan.h"
 
-CameraMan::CameraMan (CoordPoint *SpaceShipPosition, SDL_Texture* BigMap , SDL_Renderer* gRenderer){
+CameraMan::CameraMan (CoordPoint<float> *SpaceShipPosition, SDL_Texture* BigMap , SDL_Renderer* gRenderer){
     CameraMan::SpaceShipPosition = SpaceShipPosition ; 
     CameraMan::BigMap = BigMap ; 
     CameraMan::gRenderer = gRenderer ; 
@@ -8,7 +8,7 @@ CameraMan::CameraMan (CoordPoint *SpaceShipPosition, SDL_Texture* BigMap , SDL_R
 
 void CameraMan::RenderCamera() {
 
-    CoordPoint RealPos = GetRealPosOfCam(*SpaceShipPosition) ;
+    CoordPoint<float> RealPos = GetRealPosOfCam(*SpaceShipPosition) ;
     
     SDL_Rect SrcRect = makeRect(RealPos.GetX() , RealPos.GetY() , ScreenWidth , ScreenHeight) , 
              DesRect = makeRect(0 , 0 , ScreenWidth , ScreenHeight) ; 

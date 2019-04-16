@@ -1,20 +1,20 @@
 #include "ControlEngine.h"
 
-CoordVector TurningVector[16] = {{0 , -4} , {1.5,-3.7} , {2.8 , -2.8}  , {3.7 , -1.5} , {4 , 0} , 
-                                        {3.7,1.5} , {2.8,2.8} , {1.5 , 3.7} , {0,4} , {-1.5,3.7} , 
-                                        {-2.8,2.8} , {-3.7 , 1.5} , {-4,0} , {-3.7,-1.5} , {-2.8,-2.8} , 
-                                        {-1.5,-3.7} } ; 
+// CoordVector TurningVector[16] = {{0 , -4} , {1.5,-3.7} , {2.8 , -2.8}  , {3.7 , -1.5} , {4 , 0} , 
+//                                         {3.7,1.5} , {2.8,2.8} , {1.5 , 3.7} , {0,4} , {-1.5,3.7} , 
+//                                         {-2.8,2.8} , {-3.7 , 1.5} , {-4,0} , {-3.7,-1.5} , {-2.8,-2.8} , 
+//                                         {-1.5,-3.7} } ; 
 
 
 const int NumDirection = 16;
 
-CoordPoint GetRealPosOfCam (CoordPoint SpaceShipPos) {
-    CoordPoint res(0 , 0) ; 
+CoordPoint<float> GetRealPosOfCam (CoordPoint<float>& SpaceShipPos) {
+    CoordPoint<float> res(0 , 0) ; 
 
-    int SpaceShipX = SpaceShipPos.GetX() , 
+    float SpaceShipX = SpaceShipPos.GetX() , 
         SpaceShipY = SpaceShipPos.GetY() ; 
     
-    int PosCamX = 0 , PosCamY = 0 ; 
+    float PosCamX = 0 , PosCamY = 0 ; 
 
     if (SpaceShipX + ScreenWidth / 2  > BigMapWidth) PosCamX = BigMapWidth - ScreenWidth ; 
     else if (SpaceShipX - ScreenWidth / 2  < 0) PosCamX = 0 ; 

@@ -4,6 +4,7 @@
 #include "modules/modules.h"
 #include "Object/CameraMan/CameraMan.h" 
 #include "Object/SpaceShip/SpaceShip.h"
+#include "Object/Bullet/Bullet.h"
 #include <iostream> 
 // #include "Object/SpaceShip/SpaceShip.h"
 
@@ -14,7 +15,7 @@ SDL_Window* gMainWindow = NULL ;
 SDL_Renderer* gMainRenderer = NULL ; 
 SDL_Texture* BigMap = NULL ;  
 
-CoordVector MyVector(0,0) ; 
+// CoordVector MyVector(0,0) ; 
 
 void process () {
 
@@ -26,6 +27,7 @@ void process () {
 
     SpaceShip MainShip(gMainRenderer); 
     CameraMan MainCam(&MainShip.Position, BigMap , gMainRenderer) ;
+    Bullet FirstBull(gMainRenderer , &MainShip.Position) ; 
 
     MainCam.RenderCamera() ; 
     MainShip.RenderSpaceShip() ;  
@@ -37,31 +39,37 @@ void process () {
     SDL_Event e ; 
 
     while (!quit) {
+        system("clear") ; 
+
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
                 quit = true ; 
             } 
+            MainShip.HandleEvent(e) ; 
         }
 
 
+        //! For Debug 
         printf("=========================== \n") ; 
-        MainShip.MoveTowardMouse() ;
+        // MainShip.MoveTowardMouse() ; //! Move toward Mouse Mode 
+        FirstBull.Move() ;
+        MainShip.Move() ; 
         MainCam.RenderCamera() ; 
         MainShip.RenderSpaceShip() ;
+        FirstBull.Render() ; 
         printf("============================ \n") ; 
 
         // printf("%d %d \n" , x , y ) ; 
         SDL_RenderPresent(gMainRenderer) ;
-        SDL_Delay(10) ; 
+        SDL_Delay(8) ;
+        //! For Debug  
 
         // SDL_Delay(100) ; //!For Debug 
 
         // loadMedia("images/back-ground.bmp" , gMainRenderer) ;
     }
 
-    closeProgram(gMainWindow , gMainRenderer) ; 
-
-    std::cout << acos((double) 3 / 5) << std::endl << acos(-(double) 3 /5) << std::endl ; 
+    closeProgram(gMainWindow , gMainRenderer) ;  
 }
 
 int main () {
