@@ -1,0 +1,1 @@
+- Chuyển pointer truyền vào Bullet không chỉ là pointer đến Position của Spaceship mà là pointer tới cả instance cuả spaceship đó 
