@@ -2,22 +2,20 @@
 #include <iostream> 
 
 
-//! Init Module =====================================================================|
-//! =================================================================================|
+//? ======================= Init Module =============================================|
 SpaceShip::SpaceShip(SDL_Renderer* &gRenderer) {
     SpaceShip::Position = {BigMapWidth / 2 , BigMapHeight / 2} ; 
     SpaceShipImg = loadTexture("images/SpaceShip/SpaceShip.png" , gRenderer) ;
     SpaceShip::gRenderer = gRenderer ;
     // this->RecentVelocity = { 0 , -this->Speed} ; //! Init Recent Velocity in Coordinate (use with Old HandleEvent and Old Moving SpaceShip and Render Modules with Decartes Velocity)
-    this->PolarRecentVelocity = {Speed , -pii / 2} ; 
+    this->PolarRecentVelocity = {Speed , -pii / 2} ;
+    this->Exist = true ;
 }
 
-//!==================================================================================|
-//!==================================================================================|
+//?==================================================================================|
 
 
-//! Old Render Module ================================================================|
-//!===================================================================================|
+//? ===================== Old Render Module ==========================================|
 // void SpaceShip::RenderSpaceShip () {
 //     CoordPoint<float> RenderPosition = {ScreenWidth / 2 , ScreenHeight / 2} ;
 //     CoordPoint<float> CamPosition = GetRealPosOfCam(SpaceShip::Position) ; 
@@ -40,14 +38,12 @@ SpaceShip::SpaceShip(SDL_Renderer* &gRenderer) {
 //     SDL_RenderCopyEx(SpaceShip::gRenderer , SpaceShip::SpaceShipImg , NULL , &DesRect , angle , NULL , SDL_FLIP_NONE) ;  
 // }
 
-//!===================================================================================|
-//!===================================================================================|
+//? ==================================================================================|
 
-//! New Render Modules ===============================================================|
-//!===================================================================================|
+//? ===================== New Render Modules =========================================|
 
 
-//! --------------------------> Render Module with Decartes Coordinate Velocity 
+//*--------------------------> Render Module with Decartes Coordinate Velocity 
 // void SpaceShip::RenderSpaceShip () {
 //     CoordPoint<float> RenderPosition = {ScreenWidth / 2 , ScreenHeight / 2} ;
 //     CoordPoint<float> CamPosition = GetRealPosOfCam(SpaceShip::Position) ; 
@@ -70,7 +66,7 @@ SpaceShip::SpaceShip(SDL_Renderer* &gRenderer) {
 //     SDL_RenderCopyEx(SpaceShip::gRenderer , SpaceShip::SpaceShipImg , NULL , &DesRect , angle , NULL , SDL_FLIP_NONE) ;  
 // }
 
-//! ---------------------------->Render Moudle with Polar Coordinate Velocity 
+//* ----------------------> Render Moudle with Polar Coordinate Velocity 
 
 void SpaceShip::RenderSpaceShip () {
     CoordPoint<float> RenderPosition = {ScreenWidth / 2 , ScreenHeight / 2} ;
@@ -91,11 +87,9 @@ void SpaceShip::RenderSpaceShip () {
     SDL_RenderCopyEx(SpaceShip::gRenderer , SpaceShip::SpaceShipImg , NULL , &DesRect , angle , NULL , SDL_FLIP_NONE) ;  
 }
 
-//!===================================================================================|
-//!===================================================================================|
+//?===================================================================================|*
 
-//! Move Toward Mouse Version ========================================================|
-//!===================================================================================|
+//? ========================== Move Toward Mouse Version =============================|
 
 // void SpaceShip::MoveTowardMouse() {
 //     int x , y ; 
@@ -130,14 +124,11 @@ void SpaceShip::RenderSpaceShip () {
 //     SpaceShip::Position = {NewPostion.GetX() , NewPostion.GetY()} ;
 // }
 
-//!===================================================================================|
-//!===================================================================================|
+//?===================================================================================|
 
-//! Move With Keyboard ===============================================================|
-//!===================================================================================|
+//? ================================== Move With Keyboard ============================|
 
-
-//! ------------------------> Old Handle Event 
+//* ------------------------> Old Handle Event 
 // void SpaceShip::HandleEvent (SDL_Event e) {
 //     PolarVector<float> PVelocity = RecentVelocity.ConvertToPolar() ; 
 
@@ -150,7 +141,7 @@ void SpaceShip::RenderSpaceShip () {
 //     }   
 // }
 
-//!------------------------> New Handle Event 
+//*------------------------> New Handle Event 
 void SpaceShip::HandleEvent(SDL_Event& e) {
 
     if (e.type == SDL_KEYDOWN && e.key.repeat == 0) {
@@ -188,14 +179,12 @@ void SpaceShip::HandleEvent(SDL_Event& e) {
     }
 }
 
-//!===================================================================================|
-//!===================================================================================|
+//?===================================================================================|
 
-//! Move the SpaceShip================================================================|
-//!===================================================================================|
+//? ====================Move the SpaceShip============================================|
 
 
-//! Old Moving SpaceShip
+//* -------------------> Old Moving SpaceShip
 // void SpaceShip::Move() {
 //     if (this->Position.GetX() == 0 || this->Position.GetX() > BigMapWidth) 
 //         RecentVelocity.SetCoordX(-RecentVelocity.GetCoordX()) ; 
@@ -214,7 +203,7 @@ void SpaceShip::HandleEvent(SDL_Event& e) {
 //     this->Position = NewPosition ; 
 // }
 
-//! New Moving SpaceShip
+//*--------------------> New Moving SpaceShip
 void SpaceShip::Move() {
     PolarRecentVelocity.SetPhi(PolarRecentVelocity.GetPhi() + OmegaPhi) ; 
     PolarRecentVelocity.SetR(Speed + VRadius) ; 
@@ -231,7 +220,23 @@ void SpaceShip::Move() {
 
     PolarRecentVelocity = DecartesRecentVelocity.ConvertToPolar() ; 
 }
+//? ==================================================================================|
 
 
-//!===================================================================================|
-//!===================================================================================|
+//?===================================================================================|
+
+//? =================== Status Processing ============================================|
+void SpaceShip::Destroy() {
+    this->Exist = false ; 
+}
+//? ==================================================================================|
+
+//? =============== Some Get and Set Function ========================================|
+bool SpaceShip::GetExist() {
+    return this->Exist ; 
+}
+
+CoordPoint<float> SpaceShip::GetPosition () {
+    return this->Position ; 
+}
+//? ==================================================================================|

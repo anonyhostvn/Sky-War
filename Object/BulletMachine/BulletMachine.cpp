@@ -2,19 +2,6 @@
 
 
 //? ================== Constructor ==============================================================
-
-//* ---------------> OldConstrutor 
-BulletMachine::BulletMachine (SDL_Renderer* gRenderer , CoordPoint<float>* SpaceShipPosition) {
-    this->SpaceShipPosition = SpaceShipPosition ;
-    this->gRenderer = gRenderer ;
-
-    //* ================ Fire the first Bullet ========================
-    this->FireNewBullet() ; 
-    this->LastTimeFire = SDL_GetTicks() ; 
-    //* ===============================================================
-}
-
-//* ---------------> New Constructor 
 BulletMachine::BulletMachine (SDL_Renderer* gRenderer , SpaceShip* SpaceShip) {
     this->MainSpaceShip= SpaceShip ;
     this->gRenderer = gRenderer ;
@@ -29,25 +16,25 @@ BulletMachine::BulletMachine (SDL_Renderer* gRenderer , SpaceShip* SpaceShip) {
 
 void BulletMachine::Processing() {
     
-    //? ====================Fire Bullet Arcording Time ====================================
+    //* ====================Fire Bullet Arcording Time ===========
     unsigned int RecentTime = SDL_GetTicks() ; 
     if (RecentTime- this->LastTimeFire >= TimeBetweenBullet) {
         this->FireNewBullet() ; 
         this->LastTimeFire = RecentTime ; 
     }
-    //? ===================================================================================
+    //* ==========================================================
 
-    //? =====================Fire Bullet Arcording the frame ===============================
+    //? =============Fire Bullet Arcording the frame =============
     // if (!this->CountFrame) this->FireNewBullet() ; 
     // this->CountFrame ++ ; 
     // this->CountFrame %= this->FrameSpaceBetweenBullet ;
-    //? ====================================================================================
+    //? =========================================================
 
-    //? ========================== Detecting the Collision =================================
+    //* ================= Detecting the Collision ===============
     this->DetectCollision() ; 
-    //? ====================================================================================
+    //* =========================================================
 
-    //? ================= Destroying the Bullet which is not exist or being destroy ========
+    //? = Destroying the Bullet which is not exist or being destroy ===
     std::vector<Bullet> DestroyingBullet ; 
     DestroyingBullet.clear() ; 
 
@@ -65,7 +52,7 @@ void BulletMachine::Processing() {
         BulletContainer.remove(DestroyingBullet.back()) ; 
         DestroyingBullet.pop_back() ; 
     }
-    //? =====================================================================================
+    //? =================================================================
 
 
     //? If all Bullet die, fire a new bullet immediately

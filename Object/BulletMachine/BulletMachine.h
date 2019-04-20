@@ -17,15 +17,13 @@ class BulletMachine {
         int LastTimeFire = 0 ; //! The time mark that machine last fire a bullet 
         int CountBulletFire = 0 ; //! The number of bullet the machine has fire when start game
         SDL_Renderer* gRenderer ; //! The renderer of window 
-        CoordPoint<float>* SpaceShipPosition ; //! The SpaceShip Position 
-        SpaceShip* MainSpaceShip ; 
 
     public:
-        BulletMachine (SDL_Renderer* gRenderer , CoordPoint<float>* SpaceShipPosition) ; //! The constructor of bullet machine 
-        BulletMachine (SDL_Renderer* gRenderer , SpaceShip* SpaceShip); 
+        BulletMachine (SDL_Renderer* gRenderer , SpaceShip* SpaceShip);  //! The constructor of bullet machine 
         void Processing () ; //! Processing each frame 
         void FireNewBullet() ;  //! Fire new bullet 
         void DetectCollision() ; //! Detect Collision between two bullet 
+        SpaceShip* MainSpaceShip ; //! Pointer to the SpaceShip instance
 } ; 
 
 #endif

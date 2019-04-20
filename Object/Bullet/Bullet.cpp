@@ -1,25 +1,31 @@
-//! Lỗi khi test : Khi đạn bay qua tàu thì nó chạy hình vòng tròn
-
 #include "Bullet.h"
 
-Bullet::Bullet (SDL_Renderer* &gRenderer , CoordPoint<float>* SpaceShipPos) {
-    srand(time(NULL)) ; 
+Bullet::Bullet() {
+    
+}
 
-    this->gRenderer = gRenderer ; 
-    this->SpaceShipPos = SpaceShipPos ; 
+//? ===================== Constructor ====================================================
+Bullet::Bullet (SDL_Renderer* &gRenderer , SpaceShip* SpaceShipPointer , int ID) {
+    srand(time(NULL)) ; 
+    this->ID = ID ; 
+    this->Exist = true ; 
+    this->InitialTime = SDL_GetTicks() ; 
+
+    this->gRenderer = gRenderer ;
+    this->MainSpaceShip = SpaceShipPointer ; 
     this->BulletIMG = loadTexture("images/Bullet/Bullet.png" , gRenderer) ;
 
     int X = rand() & 1 , Y = rand() & 1 ; 
-    // Position = {X ? 0 : BigMapWidth , Y ? 0 : BigMapHeight} ;
-    Position = {BigMapWidth / 2 , BigMapHeight / 2} ; 
-    // RecentVelocity = {0 , Speed} ;//! RecentVelocity is for the Decartes Coordinate
+    Position = {X ? 0 : BigMapWidth , Y ? 0 : BigMapHeight} ; //? Random Starting Position 
+    // Position = {BigMapWidth / 2 , BigMapHeight / 2} ; //? Starting Position in center of map 
 
-    // CoordPoint<float> TargetPoint = (*SpaceShipPos) ;
-    // CoordVector<float> DecartesDirection = Position.MakeVector(TargetPoint) ; 
-    // PolarVector<float> PolarDirection = DecartesDirection.ConvertToPolar() ; 
-
-    this->RecentPolarVelocity = {Speed, 0} ; //! Recent Polar Velocity 
+    this->RecentPolarVelocity = {Speed, 0} ; //? Recent Polar Velocity 
     this->OmegaPhi = 0 ; 
+}
+//?=================================================================================================
+
+bool Bullet::operator == (const Bullet& Other) {
+    return this->ID == Other.ID ; 
 }
 
 // void Bullet::Move() {
@@ -86,21 +92,12 @@ Bullet::Bullet (SDL_Renderer* &gRenderer , CoordPoint<float>* SpaceShipPos) {
 // }
 
 //! Detecting Target and justify the Velocity 
-void Bullet::DetectingTarget () {
-    CoordVector<float> Direction = Position.MakeVector(*SpaceShipPos) ; 
-    PolarVector<float> PolarDirection = Direction.ConvertToPolar() ;
+void Bullet::DetectingTarget () { 
+    CoordPoint<float> SpaceShipPosition = MainSpaceShip->GetPosition() ; 
+    CoordVector<float> Direction = Position.MakeVector(SpaceShipPosition) ; 
+    PolarVector<float> PDirection = Direction.ConvertToPolar() ;
 
-    if (abs(PolarDirection.GetPhi() - RecentPolarVelocity.GetPhi()) <= DeltaPhi / ErrorRate) return ; 
-
-    
-}
-
-//! Move Bullet with Velocity in Polar Coordinate 
-void Bullet::Move() {
-    // CoordPoint<float> TargetPoint = (*SpaceShipPos) ;
-    CoordVector<float> Direction = Position.MakeVector(*SpaceShipPos) ;
-
-    PolarVector<float> PDirection =  Direction.ConvertToPolar() ; 
+    if (abs(PDirection.GetPhi() - RecentPolarVelocity.GetPhi()) <= DeltaPhi / ErrorRate) return ; 
 
     if (RecentPolarVelocity.GetPhi() + DeltaPhi < PDirection.GetPhi()) {
         if (PDirection.GetPhi() - RecentPolarVelocity.GetPhi() < pii * 2 - PDirection.GetPhi() + RecentPolarVelocity.GetPhi()) {
@@ -115,6 +112,20 @@ void Bullet::Move() {
             RecentPolarVelocity.SetPhi(RecentPolarVelocity.GetPhi() + DeltaPhi) ; 
         }
     }
+    
+
+    //! For Debug 
+    std::cout << "Direction Vector Of First Bull In Descartes: " ; 
+    Direction.print() ;  
+    std::cout << "Direction Vector Of First Bull In Polar : " ; 
+    PDirection.print() ; 
+}
+
+//! Move Bullet with Velocity in Polar Coordinate 
+void Bullet::Move() {
+
+    this->DetectingTarget() ; 
+
 
     CoordVector<float> RecentDecartesVelocity = RecentPolarVelocity.ConvertToCoord() ; 
 
@@ -122,10 +133,7 @@ void Bullet::Move() {
     Position.SetY(Position.GetY() + RecentDecartesVelocity.GetCoordY()) ; 
 
     //! For Debug ==============================================================
-    std::cout << "Direction Vector Of First Bull In Descartes: " ; 
-    Direction.print() ;  
-    std::cout << "Direction Vector Of First Bull In Polar : " ; 
-    PDirection.print() ; 
+ 
     std::cout << "Recent Velocity of First Bull In Polar : " ; 
     RecentPolarVelocity.print() ; 
     std::cout << "Recent Velocity of First Bull In Descartes : " ; 
@@ -134,17 +142,24 @@ void Bullet::Move() {
     Position.print() ; 
 
     //! For Debug ================================================================
-}
+
+    if (SDL_GetTicks() - this->InitialTime >= TimeExist) Destroy() ; 
+} 
 
 void Bullet::Render() {
-    CoordPoint<float> PosCam = GetRealPosOfCam(*SpaceShipPos) ; 
+    CoordPoint<float> SpaceShipPosition = MainSpaceShip->GetPosition() ; 
+    CoordPoint<float> PosCam = GetRealPosOfCam(SpaceShipPosition) ; 
 
     if (!(Position.GetX() >= PosCam.GetX() && Position.GetX() + BulletWidth <= PosCam.GetX() + ScreenWidth
         && Position.GetY() >= PosCam.GetY() && Position.GetY() + BulletHeight <= PosCam.GetY() + ScreenHeight)) return ; 
 
     printf("Bullet is rendered \n") ; 
 
-    if (sqrt(Position.SqrDistanceTo(*SpaceShipPos)) <= (float) ShipHeight / 2 + BulletHeight / 2) return ; 
+    // if (sqrt(Position.SqrDistanceTo(SpaceShipPosition)) <= (float) ShipHeight / 2 + BulletHeight / 2) return ; 
+    if (this->DetectCollisionWithSpaceShip()) {
+        this->Destroy() ; 
+        return ; 
+    }
 
     CoordPoint<float> RealPoint ; 
     RealPoint.SetX(Position.GetX() - BulletWidth / 2) ; 
@@ -156,3 +171,46 @@ void Bullet::Render() {
 
     SDL_RenderCopyEx(gRenderer , BulletIMG , NULL , &DesRect , angle , NULL , SDL_FLIP_NONE) ;
 }
+
+//? ============================== Status Processing =======================================
+void Bullet::Destroy() {
+    this->Exist = false ;
+}
+
+bool Bullet::StillAlive() {
+    return this->Exist ; 
+}
+
+void Bullet::FreeMemory() {
+    SDL_DestroyTexture(this->BulletIMG) ; 
+    this->BulletIMG = NULL ; 
+}
+
+bool Bullet::CollisionWith (Bullet& Other) {
+    CoordPoint<float> OtherPosition = Other.GetPosition() ; 
+    return this->Position.SqrDistanceTo(OtherPosition) <= BulletWidth * BulletWidth / 4 ; 
+}
+
+bool Bullet::DetectCollisionWithSpaceShip() {
+    bool Collision = false ; 
+
+    CoordPoint<float> SpaceShipPosition = MainSpaceShip->GetPosition() ;  
+
+    if (sqrt(Position.SqrDistanceTo(SpaceShipPosition)) <= (float) ShipHeight / 2 + BulletHeight / 2) Collision = true ;
+
+    if (Collision) MainSpaceShip->Destroy() ; 
+    return Collision ; 
+}
+
+//? ========================================================================================
+
+//? ============================ Some Get and Set Function =================================
+int Bullet::GetID() {
+    return this->ID ; 
+}
+
+CoordPoint<float> Bullet::GetPosition () {
+    return this->Position ; 
+}
+
+//? ========================================================================================
