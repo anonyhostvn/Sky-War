@@ -8,7 +8,9 @@ SpaceShip::SpaceShip(SDL_Renderer* &gRenderer) {
     SpaceShipImg = loadTexture("images/SpaceShip/SpaceShip.png" , gRenderer) ;
     SpaceShip::gRenderer = gRenderer ;
     // this->RecentVelocity = { 0 , -this->Speed} ; //! Init Recent Velocity in Coordinate (use with Old HandleEvent and Old Moving SpaceShip and Render Modules with Decartes Velocity)
-    this->PolarRecentVelocity = {Speed , -pii / 2} ;
+    this->Speed = ShipSpeed ; 
+    this->PolarRecentVelocity = {this->Speed , -pii / 2} ;
+    this->OmegaPhi = 0 ; 
     this->Exist = true ;
 }
 

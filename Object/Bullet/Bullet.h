@@ -5,8 +5,9 @@
 #include "../ObjectConst.h" 
 #include "../ControlEngine.h"
 #include "../SpaceShip/SpaceShip.h"
+#include "../MachineObject/MachineObject.h"
 
-class Bullet {
+class Bullet : MachineObject {
     public:
         Bullet() ; 
         Bullet (SDL_Renderer* &gRenderer , SpaceShip* SpaceShipPointer , int ID) ; 
@@ -29,14 +30,14 @@ class Bullet {
         unsigned int InitialTime ; //? The Time Bullet is appear
         float DeltaPhi = pii / 80 ; //? The angle of Bullet when turning
         float ErrorRate = 10 ; //? means 0.1 or 10% 
-        float OmegaPhi ; //? The Recent Omega 
-        float Speed = 7 ; //? max = 9 , min = 7 
+        // float OmegaPhi ; //? The Recent Omega 
+        // float Speed = 6.5 ; //? max = 9 , min = 7 
         float TimeExist = 15000 ; //? Time for bullet until self-destroy
         SDL_Texture* BulletIMG = NULL ; //? texture of bullet 
-        CoordPoint<float> Position ; //? Position of Bullet
+        // CoordPoint<float> Position ; //? Position of Bullet
         SpaceShip* MainSpaceShip ; //? Pointer to the instance of Spaceship 
-        // CoordVector<float> RecentVelocity ;  
-        PolarVector<float> RecentPolarVelocity ; //? Velocity of Bullet in Polar Coordinate 
+        //// CoordVector<float> RecentVelocity ;  
+        // PolarVector<float> RecentPolarVelocity ; //? Velocity of Bullet in Polar Coordinate 
         SDL_Renderer* gRenderer ; //? Renderer of Game
 } ;
 

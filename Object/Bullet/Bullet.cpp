@@ -16,10 +16,11 @@ Bullet::Bullet (SDL_Renderer* &gRenderer , SpaceShip* SpaceShipPointer , int ID)
     this->BulletIMG = loadTexture("images/Bullet/Bullet.png" , gRenderer) ;
 
     int X = rand() & 1 , Y = rand() & 1 ; 
-    Position = {X ? 0 : BigMapWidth , Y ? 0 : BigMapHeight} ; //? Random Starting Position 
+    this->Position = {X ? 0 : BigMapWidth , Y ? 0 : BigMapHeight} ; //? Random Starting Position 
     // Position = {BigMapWidth / 2 , BigMapHeight / 2} ; //? Starting Position in center of map 
 
-    this->RecentPolarVelocity = {Speed, 0} ; //? Recent Polar Velocity 
+    this->Speed = BulletSpeed ;
+    this->PolarRecentVelocity = {Speed, 0} ; //? Recent Polar Velocity 
     this->OmegaPhi = 0 ; 
 }
 //?=================================================================================================
@@ -97,19 +98,19 @@ void Bullet::DetectingTarget () {
     CoordVector<float> Direction = Position.MakeVector(SpaceShipPosition) ; 
     PolarVector<float> PDirection = Direction.ConvertToPolar() ;
 
-    if (abs(PDirection.GetPhi() - RecentPolarVelocity.GetPhi()) <= DeltaPhi / ErrorRate) return ; 
+    if (abs(PDirection.GetPhi() - PolarRecentVelocity.GetPhi()) <= DeltaPhi / ErrorRate) return ; 
 
-    if (RecentPolarVelocity.GetPhi() + DeltaPhi < PDirection.GetPhi()) {
-        if (PDirection.GetPhi() - RecentPolarVelocity.GetPhi() < pii * 2 - PDirection.GetPhi() + RecentPolarVelocity.GetPhi()) {
-            RecentPolarVelocity.SetPhi(RecentPolarVelocity.GetPhi() + DeltaPhi) ; 
+    if (PolarRecentVelocity.GetPhi() + DeltaPhi < PDirection.GetPhi()) {
+        if (PDirection.GetPhi() - PolarRecentVelocity.GetPhi() < pii * 2 - PDirection.GetPhi() + PolarRecentVelocity.GetPhi()) {
+            PolarRecentVelocity.SetPhi(PolarRecentVelocity.GetPhi() + DeltaPhi) ; 
         } else {
-            RecentPolarVelocity.SetPhi(RecentPolarVelocity.GetPhi() - DeltaPhi) ; 
+            PolarRecentVelocity.SetPhi(PolarRecentVelocity.GetPhi() - DeltaPhi) ; 
         }
-    } else if (PDirection.GetPhi() + DeltaPhi < RecentPolarVelocity.GetPhi()) {
-        if (RecentPolarVelocity.GetPhi() - PDirection.GetPhi() < pii * 2 - RecentPolarVelocity.GetPhi() + PDirection.GetPhi()) {
-            RecentPolarVelocity.SetPhi(RecentPolarVelocity.GetPhi() - DeltaPhi) ; 
+    } else if (PDirection.GetPhi() + DeltaPhi < PolarRecentVelocity.GetPhi()) {
+        if (PolarRecentVelocity.GetPhi() - PDirection.GetPhi() < pii * 2 - PolarRecentVelocity.GetPhi() + PDirection.GetPhi()) {
+            PolarRecentVelocity.SetPhi(PolarRecentVelocity.GetPhi() - DeltaPhi) ; 
         } else {
-            RecentPolarVelocity.SetPhi(RecentPolarVelocity.GetPhi() + DeltaPhi) ; 
+            PolarRecentVelocity.SetPhi(PolarRecentVelocity.GetPhi() + DeltaPhi) ; 
         }
     }
     
@@ -127,7 +128,7 @@ void Bullet::Move() {
     this->DetectingTarget() ; 
 
 
-    CoordVector<float> RecentDecartesVelocity = RecentPolarVelocity.ConvertToCoord() ; 
+    CoordVector<float> RecentDecartesVelocity = PolarRecentVelocity.ConvertToCoord() ; 
 
     Position.SetX(Position.GetX() + RecentDecartesVelocity.GetCoordX()) ; 
     Position.SetY(Position.GetY() + RecentDecartesVelocity.GetCoordY()) ; 
@@ -135,7 +136,7 @@ void Bullet::Move() {
     //! For Debug ==============================================================
  
     std::cout << "Recent Velocity of First Bull In Polar : " ; 
-    RecentPolarVelocity.print() ; 
+    PolarRecentVelocity.print() ; 
     std::cout << "Recent Velocity of First Bull In Descartes : " ; 
     RecentDecartesVelocity.print() ; 
     std::cout << "First Bull Position : " ; 
@@ -167,7 +168,7 @@ void Bullet::Render() {
 
     SDL_Rect DesRect = makeRect(Position.GetX() - PosCam.GetX() , Position.GetY() - PosCam.GetY() , BulletWidth , BulletHeight) ; 
 
-    float angle = RecentPolarVelocity.GetPhi() * 180 / pii ;
+    float angle = PolarRecentVelocity.GetPhi() * 180 / pii ;
 
     SDL_RenderCopyEx(gRenderer , BulletIMG , NULL , &DesRect , angle , NULL , SDL_FLIP_NONE) ;
 }
