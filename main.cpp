@@ -28,6 +28,7 @@ void process () {
 
     while (!quit) {
         system("clear") ; 
+
         StartingFrameTime = SDL_GetTicks() ; 
 
         while (SDL_PollEvent(&e)) {
@@ -53,7 +54,7 @@ void process () {
         }
         //? _____________________________________________________
 
-
+        SDL_RenderClear(gMainRenderer) ; 
         // printf("%d %d \n" , x , y ) ; 
         SDL_RenderPresent(gMainRenderer) ;
 
