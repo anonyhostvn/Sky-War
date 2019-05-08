@@ -1,15 +1,11 @@
 #include "BulletMachine.h"
 
-
 //? ================== Constructor ==============================================================
-BulletMachine::BulletMachine (SDL_Renderer* gRenderer , SpaceShip* SpaceShip) {
-    this->MainSpaceShip= SpaceShip ;
-    this->gRenderer = gRenderer ;
-
-    //* ================ Fire the first Bullet ========================
-    this->FireNewBullet() ; 
-    this->LastTimeFire = SDL_GetTicks() ; 
-    //* ===============================================================   
+BulletMachine::BulletMachine (ExplosionEffect* MainExplosionEffect) {
+    this->RecentLevel = 3 ; 
+    this->FrameBetweenBullet = FrameBetweenBulletConst / InitialBullet ; 
+    this->MainExplosionEffect = MainExplosionEffect ; 
+    for (int i = 0 ; i < MaxBullet ; i ++) BulletContainer[i] = NULL ; 
 }
 
 //? ================================================================================================
@@ -17,12 +13,26 @@ BulletMachine::BulletMachine (SDL_Renderer* gRenderer , SpaceShip* SpaceShip) {
 void BulletMachine::Processing() {
     
     //* ====================Fire Bullet Arcording Time ===========
-    unsigned int RecentTime = SDL_GetTicks() ; 
-    if (RecentTime- this->LastTimeFire >= TimeBetweenBullet) {
-        this->FireNewBullet() ; 
-        this->LastTimeFire = RecentTime ; 
+    // unsigned int RecentTime = SDL_GetTicks() ; 
+    // if (RecentTime- this->LastTimeFire >= TimeBetweenBullet) {
+    //     this->FireNewBullet() ; 
+    //     this->LastTimeFire = RecentTime ; 
+    // }
+    // //* ==========================================================
+
+    //* ================== Fire Bullet Arcording Frame ==========
+
+    if (!this->RecentFrame) this->FireNewBullet() ;
+    this->RecentFrame ++ ; 
+    if (this->RecentFrame > this->FrameBetweenBullet) this->RecentFrame = 0 ;
+    //* =========================================================
+
+    //* Increase Level
+    if (this->NumberOfBulletFire >= this->Threshold) {
+        RecentLevel ++ ;
+        this->Threshold += this->Threshold * 2 ; 
+        this->FrameBetweenBullet = (float) FrameBetweenBulletConst / RecentLevel ; 
     }
-    //* ==========================================================
 
     //? =============Fire Bullet Arcording the frame =============
     // if (!this->CountFrame) this->FireNewBullet() ; 
@@ -35,46 +45,52 @@ void BulletMachine::Processing() {
     //* =========================================================
 
     //? = Destroying the Bullet which is not exist or being destroy ===
-    std::vector<Bullet> DestroyingBullet ; 
-    DestroyingBullet.clear() ; 
 
-    for (Bullet &tmp : BulletContainer)
-        if (tmp.StillAlive()) {
-            tmp.Move() ; 
-            tmp.Render() ; 
-        }
-        else {
-            DestroyingBullet.push_back(tmp) ; 
-            tmp.FreeMemory() ;
+    for (int i = 0 ; i < MaxBullet ; i ++) 
+        if (BulletContainer[i] != NULL) {
+            if (BulletContainer[i]->StillAlive()) {
+                BulletContainer[i]->Move() ;
+                BulletContainer[i]->Render() ; 
+            } 
+
+            if (!BulletContainer[i]->StillAlive()) {
+                MainExplosionEffect->AddNewExplosion(BulletContainer[i]->GetPosition()) ; 
+                delete(BulletContainer[i]) ;
+                BulletContainer[i] = NULL ; 
+            }
         }
 
-    while (DestroyingBullet.size()) {
-        BulletContainer.remove(DestroyingBullet.back()) ; 
-        DestroyingBullet.pop_back() ; 
-    }
+    MainExplosionEffect->Process() ;
     //? =================================================================
 
-
-    //? If all Bullet die, fire a new bullet immediately
-    if (BulletContainer.size() == 0) this->FireNewBullet() ; 
-
-    //! For Debug
-    printf("The Number of Bullet : %d \n" , this->BulletContainer.size()) ; 
-}
-
-void BulletMachine::FireNewBullet() {
-    CountBulletFire ++ ; 
-    // Bullet NewBullet(gRenderer , SpaceShipPosition , CountBulletFire) ;
-    Bullet NewBullet(gRenderer , MainSpaceShip , CountBulletFire) ;
-    this->BulletContainer.push_back(NewBullet) ;
+    std::cout << "Recent Level : " << this->RecentLevel 
+              << " ; Number bullet fire : " << this->NumberOfBulletFire 
+              << " ; Recent bullet in display : " << SumOfBullet
+              << " ; Frame Between Bullet : " << this->FrameBetweenBullet 
+              << " ; Threshold : " <<  this->Threshold
+              << "\n" ; 
 }
 
 void BulletMachine::DetectCollision() {
-    for (Bullet &RecentBullet : BulletContainer) {
-        for (Bullet OtherBullet : BulletContainer) if (! (RecentBullet == OtherBullet)) {
-            if (RecentBullet.CollisionWith(OtherBullet)) {
-                RecentBullet.Destroy() ; 
-            } 
-        }
+
+    for (int i = 0 ; i < MaxBullet ; i ++) if (BulletContainer[i] != NULL) 
+        for (int j = 0 ; j < MaxBullet ; j ++)
+            if (BulletContainer[j] != NULL && i != j && BulletContainer[i]->CollisionWith(*BulletContainer[j])) {
+                BulletContainer[i]->Destroy() ;
+                logIfs << "Collision with other bullet \n" ;  
+                this->RecentFrame = 0 ; 
+            }
+}
+
+void BulletMachine::FireNewBullet() {
+
+    srand(time(NULL)) ; 
+    int Type = rand() % 2 ;
+
+    for (int i = 0 ; i < MaxBullet ; i ++) if (BulletContainer[i] == NULL) {
+        this->NumberOfBulletFire ++ ;
+        if (Type) BulletContainer[i] = new BulletT1() ; 
+        else BulletContainer[i] = new BulletT0() ; 
+        return ;
     }
 }

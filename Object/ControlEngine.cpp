@@ -8,11 +8,11 @@
 
 const int NumDirection = 16;
 
-CoordPoint<float> GetRealPosOfCam (CoordPoint<float>& SpaceShipPos) {
+CoordPoint<float> GetRealPosOfCam () {
     CoordPoint<float> res(0 , 0) ; 
 
-    float SpaceShipX = SpaceShipPos.GetX() , 
-        SpaceShipY = SpaceShipPos.GetY() ; 
+    float SpaceShipX = POS_SPACESHIP->GetX() , 
+        SpaceShipY = POS_SPACESHIP->GetY() ; 
     
     float PosCamX = 0 , PosCamY = 0 ; 
 

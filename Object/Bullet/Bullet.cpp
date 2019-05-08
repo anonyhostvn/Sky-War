@@ -1,33 +1,28 @@
 #include "Bullet.h"
 
-Bullet::Bullet() {
-    
-}
-
 //? ===================== Constructor ====================================================
-Bullet::Bullet (SDL_Renderer* &gRenderer , SpaceShip* SpaceShipPointer , int ID) {
+Bullet::Bullet () {
+    SumOfBullet ++ ;
+
     srand(time(NULL)) ; 
-    this->ID = ID ; 
-    this->Exist = true ; 
-    this->InitialTime = SDL_GetTicks() ; 
+    this->Exist = true ;
+    // this->InitialTime = SDL_GetTicks() ; 
 
-    this->gRenderer = gRenderer ;
-    this->MainSpaceShip = SpaceShipPointer ; 
-    this->BulletIMG = loadTexture("images/Bullet/Bullet.png" , gRenderer) ;
+    // this->BulletIMG = loadTexture("images/Effect/Trail-Effect.png" , gRenderer) ;
 
-    int X = rand() & 1 , Y = rand() & 1 ; 
-    this->Position = {X ? 0 : BigMapWidth , Y ? 0 : BigMapHeight} ; //? Random Starting Position 
-    // Position = {BigMapWidth / 2 , BigMapHeight / 2} ; //? Starting Position in center of map 
+    float RandPhi = (float) (rand() % 618) / 10 ;
+    PolarVector<float> RandomVector(1.5 * ScreenWidth , RandPhi) ;
+    CoordVector<float> RandomVtr = RandomVector.ConvertToCoord() ;
+    int X = POS_SPACESHIP->GetX() + RandomVtr.GetCoordX() , Y = POS_SPACESHIP->GetY() + RandomVtr.GetCoordY() ; 
+    this->Position = {X , Y } ; //? Random Starting Position 
 
-    this->Speed = BulletSpeed ;
-    this->PolarRecentVelocity = {Speed, 0} ; //? Recent Polar Velocity 
-    this->OmegaPhi = 0 ; 
+    this->OmegaPhi = 0 ;
+
+    // TrailEffect temp {gRenderer , 5 , 300 , BulletWidth , BulletHeight} ; 
+    float Angle = this->PolarRecentVelocity.GetPhi() ; 
+    this->BulletTrailEffect = new TrailEffect(this->Position , Angle) ;
 }
 //?=================================================================================================
-
-bool Bullet::operator == (const Bullet& Other) {
-    return this->ID == Other.ID ; 
-}
 
 // void Bullet::Move() {
 //     CoordPoint<float> TargetPoint = (*SpaceShipPos) ; 
@@ -94,7 +89,7 @@ bool Bullet::operator == (const Bullet& Other) {
 
 //! Detecting Target and justify the Velocity 
 void Bullet::DetectingTarget () { 
-    CoordPoint<float> SpaceShipPosition = MainSpaceShip->GetPosition() ; 
+    CoordPoint<float> SpaceShipPosition = *POS_SPACESHIP ; 
     CoordVector<float> Direction = Position.MakeVector(SpaceShipPosition) ; 
     PolarVector<float> PDirection = Direction.ConvertToPolar() ;
 
@@ -124,6 +119,7 @@ void Bullet::DetectingTarget () {
 
 //! Move Bullet with Velocity in Polar Coordinate 
 void Bullet::Move() {
+    if (Pause) return ; 
 
     this->DetectingTarget() ; 
 
@@ -143,38 +139,51 @@ void Bullet::Move() {
     Position.print() ; 
 
     //! For Debug ================================================================
-
-    if (SDL_GetTicks() - this->InitialTime >= TimeExist) Destroy() ; 
+    this->RecentFrame ++ ;  
+    if (this->RecentFrame >= this->FrameExist) {
+    logIfs << "Destroy because end of frame " << this->RecentFrame << FrameExist << "\n" ; 
+        Destroy() ;
+    }
 } 
 
 void Bullet::Render() {
-    CoordPoint<float> SpaceShipPosition = MainSpaceShip->GetPosition() ; 
-    CoordPoint<float> PosCam = GetRealPosOfCam(SpaceShipPosition) ; 
+    CoordPoint<float> PosCam = GetRealPosOfCam() ; 
+
+    float Phi = PolarRecentVelocity.GetPhi() ; 
+    BulletTrailEffect->Process(this->Position , Phi) ;
 
     if (!(Position.GetX() >= PosCam.GetX() && Position.GetX() + BulletWidth <= PosCam.GetX() + ScreenWidth
         && Position.GetY() >= PosCam.GetY() && Position.GetY() + BulletHeight <= PosCam.GetY() + ScreenHeight)) return ; 
 
-    printf("Bullet is rendered \n") ; 
+    printf("Bullet is rendering \n") ; 
 
-    // if (sqrt(Position.SqrDistanceTo(SpaceShipPosition)) <= (float) ShipHeight / 2 + BulletHeight / 2) return ; 
+    //// if (sqrt(Position.SqrDistanceTo(SpaceShipPosition)) <= (float) ShipHeight / 2 + BulletHeight / 2) return ; 
+
     if (this->DetectCollisionWithSpaceShip()) {
         this->Destroy() ; 
+        RecentLife -= DamageBullet[this->Type] ;
         return ; 
     }
 
     CoordPoint<float> RealPoint ; 
-    RealPoint.SetX(Position.GetX() - BulletWidth / 2) ; 
-    RealPoint.SetY(Position.GetY() - BulletHeight / 2) ; 
+    // RealPoint.SetX(Position.GetX() - BulletWidth / 2) ; 
+    // RealPoint.SetY(Position.GetY() - BulletHeight / 2) ;
+    RealPoint.SetX(Position.GetX() - PosCam.GetX()) ; 
+    RealPoint.SetY(Position.GetY() - PosCam.GetY()) ;
 
     SDL_Rect DesRect = makeRect(Position.GetX() - PosCam.GetX() , Position.GetY() - PosCam.GetY() , BulletWidth , BulletHeight) ; 
 
     float angle = PolarRecentVelocity.GetPhi() * 180 / pii ;
 
-    SDL_RenderCopyEx(gRenderer , BulletIMG , NULL , &DesRect , angle , NULL , SDL_FLIP_NONE) ;
+    // SDL_RenderCopyEx(gMainRenderer , gBulletTextureType1 , NULL , &DesRect , angle , NULL , SDL_FLIP_NONE) ;
+    SDL_RenderCopyEx(gMainRenderer , gBulletTexture[this->Type] , NULL , &DesRect , angle , NULL , SDL_FLIP_NONE) ;   
 }
 
 //? ============================== Status Processing =======================================
 void Bullet::Destroy() {
+    SumOfBullet -- ; 
+
+    RecentScore += ScoreBullet[this->Type] ;
     this->Exist = false ;
 }
 
@@ -183,8 +192,7 @@ bool Bullet::StillAlive() {
 }
 
 void Bullet::FreeMemory() {
-    SDL_DestroyTexture(this->BulletIMG) ; 
-    this->BulletIMG = NULL ; 
+    (*BulletTrailEffect).FreeMemory() ;
 }
 
 bool Bullet::CollisionWith (Bullet& Other) {
@@ -195,23 +203,28 @@ bool Bullet::CollisionWith (Bullet& Other) {
 bool Bullet::DetectCollisionWithSpaceShip() {
     bool Collision = false ; 
 
-    CoordPoint<float> SpaceShipPosition = MainSpaceShip->GetPosition() ;  
+    CoordPoint<float> SpaceShipPosition = *POS_SPACESHIP ;  
 
     if (sqrt(Position.SqrDistanceTo(SpaceShipPosition)) <= (float) ShipHeight / 2 + BulletHeight / 2) Collision = true ;
 
-    if (Collision) MainSpaceShip->Destroy() ; 
+    if (Collision) logIfs << "Collision spaceship " 
+                          << " == Velocity of bullet " << this->PolarRecentVelocity.GetR() << "--" << this->PolarRecentVelocity.GetPhi() 
+                          << " Position of bullet " << this->Position.GetX() << " -- " << this->Position.GetY() 
+                          << "\n" ; 
+
     return Collision ; 
 }
 
 //? ========================================================================================
 
 //? ============================ Some Get and Set Function =================================
-int Bullet::GetID() {
-    return this->ID ; 
-}
 
 CoordPoint<float> Bullet::GetPosition () {
     return this->Position ; 
+}
+
+int Bullet::GetType() {
+    return this->Type ; 
 }
 
 //? ========================================================================================

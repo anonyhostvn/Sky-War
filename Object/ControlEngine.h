@@ -9,6 +9,6 @@ enum Dimension {TurnLeft , TurnRight} ;
 // extern CoordVector TurningVector[16] ; 
 extern const int NumDirection ; 
 
-CoordPoint<float> GetRealPosOfCam (CoordPoint<float> &SpaceShipPos) ; 
+CoordPoint<float> GetRealPosOfCam () ; 
 
 #endif

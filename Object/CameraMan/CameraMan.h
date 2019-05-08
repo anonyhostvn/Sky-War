@@ -8,14 +8,8 @@
 
 class CameraMan {
     public:
-        CameraMan (CoordPoint<float> *SpaceShipPosition, SDL_Texture* BigMap , SDL_Renderer* gRenderer) ; 
-        CameraMan (SpaceShip* SpaceShip , SDL_Texture* BigMap , SDL_Renderer* gRenderer) ;
+        CameraMan () ;
         void RenderCamera () ; 
-
-    private:
-        SpaceShip* MainSpaceShip ; 
-        SDL_Texture* BigMap = NULL ; 
-        SDL_Renderer* gRenderer = NULL ; 
 } ; 
 
 #endif

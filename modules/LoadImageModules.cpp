@@ -23,6 +23,8 @@ SDL_Texture* loadTexture (const std :: string path , SDL_Renderer* gRenderer) {
     }
 
     SDL_Texture* resultTexture = SDL_CreateTextureFromSurface(gRenderer , LoadedSurface) ; 
+
+    return resultTexture; //! If remove this line, the program still work !!!!!
 }
 
 void renderTexture (SDL_Texture* &gTexture , SDL_Renderer* &gRenderer , int posX , int posY){
