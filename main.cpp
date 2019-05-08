@@ -9,73 +9,124 @@
 #include "Object/ExplosionEffect/ExplosionEffect.h"
 #include "Object/Nature/Nature.h"
 #include "Object/GUI/GUI.h"
+#include "Object/EndGame/EndGame.h"
+#include "Object/Opening/Opening.h"
 #include <iostream> 
 
+//? ================ Screen Window Status ============================
 SDL_Window* gMainWindow = NULL ; 
 SDL_Renderer* gMainRenderer = NULL ; 
 SDL_Texture* BigMap = NULL ;  
+SDL_Event e ; 
 bool IsLoser = false ; 
 bool Pause = false ; 
+bool quit = false ; 
 
+EndGame* EndGameGui = NULL ;
+OpeningGame* OpeningGui = NULL ; 
+//? ===========================================================
+
+//? ===================== Game Object =========================
 CoordPoint<float>* POS_SPACESHIP = NULL ; 
+SpaceShip* MainShip = NULL ; 
+Nature* GameNature = NULL ;
+ExplosionEffect* GameExplosionEffect = NULL ; 
+CameraMan* MainCam = NULL  ;
+BulletMachine* GameBulletMachine = NULL  ;
+GUI* GAMEGUI = NULL ;
+//? ===========================================================
 
+//? ============== Short Module ===============================
 void Initialize () {
     initVideo(gMainWindow , gMainRenderer , BigMap, ScreenWidth , ScreenHeight) ;
+    GameStatus = StatusOpening ; 
+
+    EndGameGui = new EndGame() ; 
+    OpeningGui = new OpeningGame() ;
 }
 
-void Process () {
+void FreeGameMemory() {
+    if (MainShip != NULL) delete(MainShip) ; 
+    if (MainCam != NULL) delete(MainCam) ; 
+    if (GameNature != NULL) delete(GameNature) ; 
+    if (GameExplosionEffect != NULL) delete(GameExplosionEffect) ; 
 
-    auto end = std::chrono::system_clock::now();
-    std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+    MainShip = NULL ; 
+    MainCam = NULL ; 
+    GameNature = NULL ; 
+    GameExplosionEffect = NULL ; 
+}
 
-    logIfs << "Initialize " << std::ctime(&end_time) << "\n " ;  
+void ResetGame () {
+    FreeGameMemory() ; 
 
-    InitGame () ;
+    Pause = false ;
+    Mix_HaltMusic() ; 
+    MainShip = new SpaceShip; 
+    GameNature = new Nature;
+    GameExplosionEffect = new ExplosionEffect ; 
+    MainCam = new CameraMan ;
+    GameBulletMachine = new BulletMachine(GameExplosionEffect) ;
+    GAMEGUI = new GUI() ;
 
     Mix_PlayMusic(gBG_Sound , -1) ; 
+}
 
-    SpaceShip* MainShip = new SpaceShip; 
+void MoveObject () {
+    MainShip->Move() ; 
+    GameBulletMachine->Processing() ; 
+}
 
-    Nature* GameNature = new Nature;
-    ExplosionEffect* GameExplosionEffect = new ExplosionEffect ; 
+void RenderingGameObject () {
+    MainCam->RenderCamera() ; 
+    GameNature->Render() ;
+    MainShip->RenderSpaceShip() ;
+    GameBulletMachine->Render() ; 
+    GAMEGUI->Render() ;
+}
 
-    CameraMan* MainCam = new CameraMan ;
-    BulletMachine* GameBulletMachine = new BulletMachine(GameExplosionEffect) ;
-    GUI* GAMEGUI = new GUI() ;
+//? =============================================================================
 
-    bool quit = false ; 
-    SDL_Event e ; 
+void Process () {
+    SDL_RenderClear(gMainRenderer) ; 
+
+    InitGame () ;
+    ResetGame() ;
+
     int TimeDelay ; 
     unsigned int StartingFrameTime ;
 
     while (!quit) {
-        // system("clear") ; 
-        StartingFrameTime = SDL_GetTicks() ; 
+        StartingFrameTime = SDL_GetTicks() ;
 
         while (SDL_PollEvent(&e)) {
             if (e.type == SDL_QUIT) {
-                quit = true ; 
-            } else if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE) {
+                quit = true ;
+            } 
+            if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_SPACE) {
                 Pause = !Pause;
-            } else MainShip->HandleEvent(e) ; 
+            } 
+            
+            if (Pause && e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_ESCAPE) {
+                GameStatus = StatusOpening ; 
+                return ; 
+            }
+            
+            MainShip->HandleEvent(e) ; 
         }
 
-        SDL_SetRenderDrawColor(gMainRenderer , 0xFF , 0xFF , 0xFF , 0xFF) ; 
         SDL_RenderClear(gMainRenderer) ; 
 
         //! For Debug 
-        printf("=========================== \n") ; 
-        MainShip->Move() ; 
-        MainCam->RenderCamera() ; 
-        GameNature->Process() ; 
-        MainShip->RenderSpaceShip() ;
-        GameBulletMachine->Processing() ; 
-        GAMEGUI->Process() ; 
+        printf("=========================== \n") ;
+        MoveObject() ; 
+        RenderingGameObject() ; 
         printf("============================ \n") ; 
 
         //? _____________ Processing Loser ______________________
         if (RecentLife <= 0) {
-            break ;
+            GameStatus = StatusEndgame ;
+            break ; 
         }
         //? _____________________________________________________
 
@@ -86,16 +137,80 @@ void Process () {
         SDL_Delay(TimeDelay) ;
     }
 
+    if (GameStatus == StatusEndgame)
+    for (int i = 1 ; i <= 200 ; i ++) {
+        SDL_RenderClear(gMainRenderer) ; 
+        MoveObject() ; 
+        RenderingGameObject() ; 
 
-    delete(MainShip) ; 
-    delete(MainCam) ; 
-    delete(GameNature) ; 
-    delete(GameExplosionEffect) ; 
-    MainShip = NULL ; 
-    MainCam = NULL ; 
-    GameNature = NULL ; 
-    GameExplosionEffect = NULL ; 
-    Mix_HaltMusic() ; 
+        SDL_RenderPresent(gMainRenderer) ;
+        SDL_Delay(15) ; 
+    }
+
+    FreeGameMemory() ; 
+
+}
+
+void EndGameGUI () {
+
+    EndGameGui->BeginEndGame() ; 
+
+    while (!quit && !EndGameGui->IsChoose()) {
+         while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) {
+                quit = true ;
+            } else EndGameGui->Process(e) ;
+        }
+
+        SDL_RenderClear(gMainRenderer) ; 
+        EndGameGui->Render() ;
+        SDL_RenderPresent(gMainRenderer) ; 
+        SDL_Delay(8) ;
+
+    }
+
+    if (EndGameGui->PlayAgain()) GameStatus = StatusPlayingGame ; 
+    else GameStatus = StatusOpening ; 
+}
+
+void OpeningGUI () {
+    OpeningGui->Init() ;
+
+    
+    while (!quit && !OpeningGui->IsSelect()) {
+         while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) {
+                quit = true ;
+            } else OpeningGui->Process(e) ;
+        }
+
+        SDL_RenderClear(gMainRenderer) ; 
+        OpeningGui->Render() ; 
+        SDL_RenderPresent(gMainRenderer) ; 
+        SDL_Delay(8) ;
+    }
+
+    if (OpeningGui->IsStart()) GameStatus = StatusPlayingGame ; 
+    else quit = true ; 
+}
+
+void GameGui () {
+    SDL_SetRenderDrawColor(gMainRenderer , 0xFF , 0xFF , 0xFF , 0xFF) ;
+
+    while (!quit) {
+        while (SDL_PollEvent(&e)) {
+            if (e.type == SDL_QUIT) {
+                quit = true ;
+            }
+        }
+
+        SDL_RenderClear(gMainRenderer) ; 
+        if (GameStatus == StatusPlayingGame) Process() ;
+        else if (GameStatus == StatusEndgame) EndGameGUI() ; 
+        else OpeningGUI() ;
+
+        if (quit) return ; 
+    }
 }
 
 void testing () {
@@ -105,11 +220,6 @@ void testing () {
 
     SDL_SetRenderDrawColor(gMainRenderer , 0 , 0 , 0 , 0) ;
     SDL_RenderClear(gMainRenderer) ;
-    SDL_Rect DesRect ; 
-    DesRect.x = 0 ; 
-    DesRect.y = 0 ; 
-    DesRect.w = 100 ;  
-    DesRect.h = 100 ; 
 
     while (!quit) {
         while (SDL_PollEvent(&e)) {
@@ -118,19 +228,6 @@ void testing () {
             }
         }
 
-        std::cout << frame << "\n" ; 
-        SDL_RenderCopy(gMainRenderer , gTrailEffect , &TrailRect[frame] , &DesRect) ;
-        SDL_RenderPresent(gMainRenderer) ; 
-        frame ++ ; DesRect.x += 10 ;
-        if (DesRect.x >= ScreenWidth) DesRect.x = 0; 
-        SDL_Delay(50) ; 
-        SDL_RenderClear(gMainRenderer) ; 
-        // if (frame == NumberOfTrail) {
-        //     SDL_RenderClear(gMainRenderer) ; 
-        //     SDL_RenderPresent(gMainRenderer) ; 
-        //     SDL_Delay(2000) ; 
-        // }
-        if (frame >= NumberOfTrail) frame = 0 ; 
     }
 
     SDL_RenderClear(gMainRenderer) ; 
@@ -142,9 +239,9 @@ void testing () {
 
 int main () {
     Initialize() ; 
-    Process() ; 
+    // Process() ; 
+    GameGui() ; 
 
-    // testing() ; 
     closeProgram(gMainWindow , gMainRenderer) ;  
     return 0 ; 
 }

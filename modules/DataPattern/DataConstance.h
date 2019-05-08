@@ -28,6 +28,10 @@ static const int BarLifePosX = FramePosX + 30 ;
 static const int BarLifePosY = FramePosY + 15 ; 
 static const int BarLifeWidth = 240 ; 
 static const int BarLifeHeight = 40 ; 
+static const int PauseTextWidth = 200 ; 
+static const int PauseTextHeight = 40 ;
+static const int PauseTextPosX = (ScreenWidth - PauseTextWidth) / 2 ; 
+static const int PauseTextPosY = ScreenHeight / 3 ; 
 
 static const int MaxLife = 10 ; 
 static const int DamageBullet[2] = {2 , 3} ; 

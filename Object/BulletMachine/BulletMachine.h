@@ -34,6 +34,7 @@ class BulletMachine {
         void Processing () ; //! Processing each frame 
         void FireNewBullet() ;  //! Fire new bullet 
         void DetectCollision() ; //! Detect Collision between two bullet 
+        void Render() ; //? Render object 
 } ; 
 
 #endif

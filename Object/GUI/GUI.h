@@ -9,7 +9,7 @@ static const int TextHeight = 40 ;
 class GUI {
     public: 
         GUI() ; 
-        void Process() ; 
+        void Render() ; 
     private:  
         int GUIScore ; 
         SDL_Rect FrameRect ;  
@@ -18,6 +18,8 @@ class GUI {
         SDL_Rect ScoreRect ;
         SDL_Rect TextInTopRight ;  
         SDL_Rect FilterRect ; 
+        SDL_Rect PauseTextRect ; 
+        SDL_Rect PressEscRect ; 
 
         SDL_Texture* TextInTopRightTexture ;
 

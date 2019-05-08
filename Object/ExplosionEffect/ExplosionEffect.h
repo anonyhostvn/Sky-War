@@ -35,7 +35,7 @@ class ExplosionEffect {
 
     public:
         ExplosionEffect() ; 
-        void Process() ;
+        void ProcessRender() ;
         void AddNewExplosion(CoordPoint<float> Position) ; 
 
     private:

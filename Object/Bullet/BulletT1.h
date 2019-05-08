@@ -18,7 +18,7 @@ class BulletT1 : public Bullet {
             logIfs << "----->>>>> Bullet Create At : " << std::ctime(&end_time) 
                    << " Have Position : " << this->Position.GetX() << "-" << this->Position.GetY() 
                    << "speed : " << this->Speed<< "\n" ;
-        } 
+        }
 } ; 
 
 #endif

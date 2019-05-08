@@ -24,7 +24,16 @@ SDL_Texture* gBarIn ;
 SDL_Texture* PauseFilter ; 
 SDL_Texture* ToPauseTexture ; 
 SDL_Texture* ToContinueTexture ; 
+SDL_Texture* PauseText ;
+ SDL_Texture* PressEsc ;
+
+SDL_Texture* GoodJobText ; 
+SDL_Texture* PlayAgainText ; 
+SDL_Texture* ToMainMenuText ;
+SDL_Texture* BackEndGame ; 
  
+SDL_Texture* OpeningTexture ; 
+
 int RecentLife ;
 int RecentScore ; 
 int SumOfBullet  ; 
@@ -67,7 +76,17 @@ void LoadGUITexture () {
     PauseFilter = loadTexture("images/Filter/black.png" , gMainRenderer) ; 
     ToPauseTexture = loadTexture("images/Text/ToPause.png" , gMainRenderer) ; 
     ToContinueTexture = loadTexture("images/Text/ToContinue.png" , gMainRenderer) ; 
+    PauseText = loadTexture("images/Text/Pause.png", gMainRenderer) ; 
 
+    GoodJobText = loadTexture("images/Text/GoodJob.png", gMainRenderer) ;     
+    PlayAgainText = loadTexture("images/Text/PlayAgain1.png", gMainRenderer) ; 
+    ToMainMenuText = loadTexture("images/Text/ToMainMenu1.png", gMainRenderer) ; 
+    BackEndGame = loadTexture("images/Text/BackEnd.png", gMainRenderer) ; 
+    OpeningTexture = loadTexture("images/GUI/Opening.png" , gMainRenderer) ; 
+    PressEsc = loadTexture("images/GUI/PressEsc.png" , gMainRenderer) ; 
+
+    SDL_SetTextureBlendMode(PressEsc, SDL_BLENDMODE_BLEND) ; 
+    SDL_SetTextureAlphaMod(PressEsc, GUIAlphaMod) ; 
     SDL_SetTextureBlendMode(gFrame , SDL_BLENDMODE_BLEND) ; 
     SDL_SetTextureAlphaMod(gFrame , GUIAlphaMod) ; 
     SDL_SetTextureBlendMode(gBarIn , SDL_BLENDMODE_BLEND) ; 
@@ -78,6 +97,8 @@ void LoadGUITexture () {
     SDL_SetTextureAlphaMod(PauseFilter , PauseFilterAlpha) ; 
     SDL_SetTextureBlendMode(ToPauseTexture, SDL_BLENDMODE_BLEND) ; 
     SDL_SetTextureBlendMode(ToContinueTexture, SDL_BLENDMODE_BLEND) ;
+    SDL_SetTextureBlendMode(PauseText, SDL_BLENDMODE_BLEND) ;
+    SDL_SetTextureAlphaMod(PauseText, GUIAlphaMod) ; 
 }
 
 bool initVideo (SDL_Window* &gMainWindow , SDL_Renderer* &gRenderer , SDL_Texture* &BigMap,  int width , int height) {

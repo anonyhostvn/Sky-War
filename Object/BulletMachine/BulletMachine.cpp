@@ -50,7 +50,7 @@ void BulletMachine::Processing() {
         if (BulletContainer[i] != NULL) {
             if (BulletContainer[i]->StillAlive()) {
                 BulletContainer[i]->Move() ;
-                BulletContainer[i]->Render() ; 
+                // BulletContainer[i]->Render() ; 
             } 
 
             if (!BulletContainer[i]->StillAlive()) {
@@ -60,7 +60,7 @@ void BulletMachine::Processing() {
             }
         }
 
-    MainExplosionEffect->Process() ;
+    // MainExplosionEffect->ProcessRender() ;
     //? =================================================================
 
     std::cout << "Recent Level : " << this->RecentLevel 
@@ -69,6 +69,13 @@ void BulletMachine::Processing() {
               << " ; Frame Between Bullet : " << this->FrameBetweenBullet 
               << " ; Threshold : " <<  this->Threshold
               << "\n" ; 
+}
+
+void BulletMachine::Render() {
+    for (int i = 0 ; i < MaxBullet ; i ++) if (BulletContainer[i] != NULL) {
+        BulletContainer[i]->Render() ; 
+    }
+    MainExplosionEffect->ProcessRender() ;
 }
 
 void BulletMachine::DetectCollision() {

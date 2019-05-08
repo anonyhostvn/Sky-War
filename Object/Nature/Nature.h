@@ -32,7 +32,7 @@ struct Cloud {
 class Nature {
     public:
         Nature() ;
-        void Process() ;  
+        void Render() ;  
     private:
         Cloud* CloudContainer[MAX_CLOUDS] ; 
 }; 

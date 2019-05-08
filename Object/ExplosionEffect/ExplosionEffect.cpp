@@ -4,7 +4,7 @@ ExplosionEffect::ExplosionEffect () {
     for (int i = 0 ; i < MaxExplosion ; i ++) ExplosionContainer[i] = NULL ;
 }
 
-void ExplosionEffect::Process() {
+void ExplosionEffect::ProcessRender() {
 
     CoordPoint<float> PosCam = GetRealPosOfCam() ;
 

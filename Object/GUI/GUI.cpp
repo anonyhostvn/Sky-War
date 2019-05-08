@@ -16,13 +16,15 @@ GUI::GUI() {
     this->ScoreRect = makeRect(FramePosX + FrameWidth / 3 , FramePosY + FrameHeight / 2 , FrameWidth / 3 , FrameHeight / 3) ; 
     this->TextInTopRight = makeRect(ScreenWidth - TextWidth , 0 , TextWidth , TextHeight) ; 
     this->FilterRect = makeRect(0 , 0 , ScreenWidth , ScreenHeight) ; 
+    this->PauseTextRect = makeRect(PauseTextPosX , PauseTextPosY , PauseTextWidth , PauseTextHeight) ;
+    this->PressEscRect = makeRect(0 ,0 , TextWidth , TextHeight) ; 
 
     GUIScore = 0 ; 
 
     this->TextInTopRightTexture = NULL ; 
 }
 
-void GUI::Process() {
+void GUI::Render() {
     if (GUIScore < RecentScore) GUIScore ++ ; 
     std::string Score = "Score : " + std::to_string(GUIScore) ; 
     SDL_Texture* ScoreTexture = CreateTextureFromString(Score) ;     
@@ -42,5 +44,9 @@ void GUI::Process() {
 
     SDL_RenderCopy(gMainRenderer , ScoreTexture , NULL , &ScoreRect) ;
 
-    if (Pause) SDL_RenderCopy(gMainRenderer , PauseFilter , NULL , &FilterRect) ; 
+    if (Pause) {
+        SDL_RenderCopy(gMainRenderer , PauseFilter , NULL , &FilterRect) ; 
+        SDL_RenderCopy(gMainRenderer , PauseText , NULL , &PauseTextRect) ; 
+        SDL_RenderCopy(gMainRenderer , PressEsc , NULL , &PressEscRect) ; 
+    }
 }

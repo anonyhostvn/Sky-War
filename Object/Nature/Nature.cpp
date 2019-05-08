@@ -8,7 +8,7 @@ Nature::Nature() {
     }
 }
 
-void Nature::Process() {
+void Nature::Render() {
  
     CoordPoint<float> PosCam = GetRealPosOfCam() ;
 

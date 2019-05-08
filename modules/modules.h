@@ -58,6 +58,7 @@ extern SDL_Texture* gClouds[NUMBER_CLOUDS_TEXTURE] ;
 extern CoordPoint<float>* POS_SPACESHIP ;
 extern bool IsLoser ; 
 extern bool Pause ; 
+extern bool quit ; 
 
 extern SDL_Texture* gFrame ;
 extern SDL_Texture* gBarOut ; 
@@ -71,7 +72,20 @@ extern TTF_Font *GameFont ;
 extern SDL_Texture* PauseFilter ; 
 extern SDL_Texture* ToPauseTexture ; 
 extern SDL_Texture* ToContinueTexture ;
+extern SDL_Texture* PauseText ;
+extern SDL_Texture* GoodJobText ; 
+extern SDL_Texture* PlayAgainText ; 
+extern SDL_Texture* ToMainMenuText ;
+extern SDL_Texture* BackEndGame ; 
+extern SDL_Texture* PressEsc ;
 
+extern SDL_Texture* OpeningTexture ; 
+
+enum {
+    StatusPlayingGame , 
+    StatusOpening , 
+    StatusEndgame 
+} GameStatus ; 
 //! ===================================================================================================
 bool initVideo (SDL_Window* &gMainWindow , SDL_Renderer* &gRenderer , SDL_Texture* &BigMap,  int width , int height) ; 
 
